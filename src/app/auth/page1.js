@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function MinimalLoginPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -29,21 +29,17 @@ export default function MinimalLoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      {/* Logo */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Noovos</h1>
-      </div>
-
-      {/* Login Form */}
-      <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold mb-4 text-center">Sign In</h2>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-2 border border-gray-300 rounded"
             required
           />
           <input
@@ -51,18 +47,28 @@ export default function MinimalLoginPage() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-2 border border-gray-300 rounded"
             required
           />
+
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white text-lg font-semibold py-2 rounded hover:bg-blue-600 transition"
+            className="w-[150px] h-[60px] bg-[#d9d9d9] rounded border-2 border-black text-black text-2xl font-normal font-['Inter'] flex items-center justify-center hover:bg-gray-300 transition"
           >
             Sign In
           </button>
+          
+          {/* <button
+            type="submit"
+            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          >
+            Sign In
+          </button> */}
+
+
         </form>
         <div className="mt-4 text-center">
-          <Link href="/register" className="text-gray-600 hover:underline">
+          <Link href="/register" className="text-blue-500 hover:underline">
             Register
           </Link>
         </div>
