@@ -7,9 +7,8 @@ import { debugLog } from "@/utils/logger";
 
 export async function POST(req) {
   try {
-    // ✅ Ensure request body is properly received
+    // Ensure request body is properly received
     const body = await req.json();
-    //console.log("Received payload:", body);
     debugLog("Received payload:", body);
 
     if (!body) {
@@ -19,64 +18,61 @@ export async function POST(req) {
       );
     }
 
-    const { firstName, lastName, email, password } = body;
+    // Destructure the new fields along with the required ones
+    const { firstName, lastName, email, password, mobile, landline, dateOfBirth } = body;
 
-    // ✅ Validate required fields
+    // Validate required fields
     if (!firstName || !lastName || !email || !password) {
-      //console.log("Missing required fields:", { firstName, lastName, email, password });
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // ✅ Check if email already exists
-    const existingUser = await prisma.users.findUnique({ where: { email } });
+    // Check if email already exists
+    const existingUser = await prisma.appuser.findUnique({ where: { email } });
     if (existingUser) {
-      //console.log("Email already in use:", email);
       return NextResponse.json(
         { error: "Email already in use" },
         { status: 400 }
       );
     }
 
-    // ✅ Hash the password securely
+    // Hash the password securely
     let hashedPassword;
     try {
       hashedPassword = await bcrypt.hash(password, 10);
     } catch (hashError) {
-      //console.error("Error hashing password:", hashError);
       return NextResponse.json(
         { error: "Failed to process password" },
         { status: 500 }
       );
     }
 
-    // ✅ Create new user record
-    const newUser = await prisma.users.create({
+    // Create new user record with the new fields included
+    const newUser = await prisma.appuser.create({
       data: {
         first_name: firstName,
         last_name: lastName,
         email: email,
+        mobile: mobile || null,
+        landline: landline || null,
+        date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
         password_hash: hashedPassword,
-        user_type: "consumer",      // Default user type; adjust as needed
-        role: "consumer",  // Default role; adjust as needed
+        user_type: "customer", // Default user type; adjust as needed
+        role: "standard", // Default role; adjust as needed
       },
     });
-
- 
 
     return NextResponse.json(
       { message: "User registered successfully", user: { email: newUser.email } },
       { status: 201 }
     );
-
-} catch (err) {
-  console.error("❌ Registration error:", err?.message || err);
-  return NextResponse.json(
-    { error: "Internal Server Error" },
-    { status: 500 }
-  );
+  } catch (err) {
+    console.error("❌ Registration error:", err?.message || err);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }
-}
-

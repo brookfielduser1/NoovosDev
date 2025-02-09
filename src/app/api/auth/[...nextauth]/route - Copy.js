@@ -26,12 +26,6 @@ export const authOptions = {
         // ✅ Find user by email using correct Prisma model (appuser)
         const user = await prisma.appuser.findUnique({
           where: { email: credentials.email },
-          select: {
-            id: true,
-            first_name: true,
-            email: true,
-            password_hash: true,
-          },
         });
 
         if (!user) {
@@ -48,7 +42,7 @@ export const authOptions = {
         }
 
         console.log("✅ Login successful for:", user.email);
-        return { id: user.id, first_name: user.first_name, email: user.email };
+        return user;
       },
     }),
   ],
@@ -58,15 +52,8 @@ export const authOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub;
-        session.user.first_name = token.first_name; // ✅ Add first_name to session
       }
       return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.first_name = user.first_name; // ✅ Store first_name in token
-      }
-      return token;
     },
   },
 };
