@@ -1,8 +1,8 @@
-"use client";
+"use client"; // Ensure hooks work in Next.js App Router
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation"; // ✅ Next.js App Router
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function MinimalLoginPage() {
@@ -10,6 +10,10 @@ export default function MinimalLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const router = useRouter();
+  const searchParams = useSearchParams(); // ✅ Get error from URL
+
+  // ✅ Display error message from NextAuth
+  const errorMessage = searchParams.get("error");
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,10 +25,10 @@ export default function MinimalLoginPage() {
       redirect: false,
     });
 
-    if (result.error) {
-      setError("Invalid email or password");
+    if (result?.error) {
+      setError(result.error); // ✅ Set error message from backend
     } else {
-      router.push("/dashboard"); // Redirect to dashboard after login
+      router.push("/dashboard"); // ✅ Redirect to dashboard on success
     }
   };
 
@@ -37,6 +41,13 @@ export default function MinimalLoginPage() {
 
       {/* Login Form */}
       <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md">
+        {error && (
+          <p className="text-red-500 text-center mb-4">{error}</p> // ✅ Display error message
+        )}
+        {errorMessage && (
+          <p className="text-red-500 text-center mb-4">{errorMessage}</p> // ✅ Error from query string
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
@@ -61,6 +72,7 @@ export default function MinimalLoginPage() {
             Sign In
           </button>
         </form>
+
         <div className="mt-4 text-center">
           <Link href="/register" className="text-gray-600 hover:underline">
             Register

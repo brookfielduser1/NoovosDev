@@ -36,7 +36,7 @@ export const authOptions = {
 
         if (!user) {
           console.log("❌ No user found for email:", credentials.email);
-          throw new Error("No user found");
+          throw new Error("User not found");
         }
 
         // ✅ Compare entered password with stored hashed password
