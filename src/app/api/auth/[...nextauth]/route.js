@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import bcrypt from "bcryptjs"; // ✅ Import bcrypt for password hashing
+import { authenticateUser } from "@/services/authService"; // ✅ Now calls authService.js
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 
@@ -23,32 +23,14 @@ export const authOptions = {
       async authorize(credentials) {
         console.log("🔍 Checking login for:", credentials.email);
 
-        // ✅ Find user by email using correct Prisma model (appuser)
-        const user = await prisma.appuser.findUnique({
-          where: { email: credentials.email },
-          select: {
-            id: true,
-            first_name: true,
-            email: true,
-            password_hash: true,
-          },
-        });
-
-        if (!user) {
-          console.log("❌ No user found for email:", credentials.email);
-          throw new Error("User not found");
+        try {
+          const user = await authenticateUser(credentials.email, credentials.password);
+          console.log("✅ Login successful for:", user.email);
+          return user;
+        } catch (error) {
+          console.log("❌ Authentication failed:", error.message);
+          throw new Error(error.message);
         }
-
-        // ✅ Compare entered password with stored hashed password
-        const passwordMatch = await bcrypt.compare(credentials.password, user.password_hash);
-        
-        if (!passwordMatch) {
-          console.log("❌ Invalid password for user:", user.email);
-          throw new Error("Invalid password");
-        }
-
-        console.log("✅ Login successful for:", user.email);
-        return { id: user.id, first_name: user.first_name, email: user.email };
       },
     }),
   ],
@@ -58,13 +40,13 @@ export const authOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub;
-        session.user.first_name = token.first_name; // ✅ Add first_name to session
+        session.user.first_name = token.first_name; // ✅ Keep session handling
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
-        token.first_name = user.first_name; // ✅ Store first_name in token
+        token.first_name = user.first_name; // ✅ Keep token handling
       }
       return token;
     },
