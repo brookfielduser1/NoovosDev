@@ -1,7 +1,7 @@
-import pool from "@/lib/database"; // ✅ Use centralized database connection
+import pool from "@/lib/database";
 import bcrypt from "bcryptjs";
 
-export async function authenticateUser(email, password) {
+export async function login(email, password) {
   try {
     // ✅ Query database for user
     const result = await pool.query(

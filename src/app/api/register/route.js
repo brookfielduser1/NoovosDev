@@ -1,13 +1,14 @@
 export const runtime = "nodejs"; // Force Node.js runtime for bcrypt compatibility
 
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs"; // Using bcryptjs
+import bcrypt from "bcryptjs"; // Using bcryptjs for password hashing
 import { debugLog } from "@/utils/logger";
+import pool from "@/lib/database";
+
 
 export async function POST(req) {
   try {
-    // Ensure request body is properly received
+    // ✅ Read request body
     const body = await req.json();
     debugLog("Received payload:", body);
 
@@ -18,10 +19,10 @@ export async function POST(req) {
       );
     }
 
-    // Destructure the new fields along with the required ones
+    // ✅ Destructure fields
     const { firstName, lastName, email, password, mobile, landline, dateOfBirth } = body;
 
-    // Validate required fields
+    // ✅ Validate required fields
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -29,16 +30,20 @@ export async function POST(req) {
       );
     }
 
-    // Check if email already exists
-    const existingUser = await prisma.appuser.findUnique({ where: { email } });
-    if (existingUser) {
+    // ✅ Check if email already exists
+    const existingUser = await pool.query(
+      `SELECT email FROM appuser WHERE email = $1`,
+      [email]
+    );
+
+    if (existingUser.rows.length > 0) {
       return NextResponse.json(
         { error: "Email already in use" },
         { status: 400 }
       );
     }
 
-    // Hash the password securely
+    // ✅ Hash password securely
     let hashedPassword;
     try {
       hashedPassword = await bcrypt.hash(password, 10);
@@ -49,23 +54,25 @@ export async function POST(req) {
       );
     }
 
-    // Create new user record with the new fields included
-    const newUser = await prisma.appuser.create({
-      data: {
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        mobile: mobile || null,
-        landline: landline || null,
-        date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
-        password_hash: hashedPassword,
-        user_type: "customer", // Default user type; adjust as needed
-        role: "standard", // Default role; adjust as needed
-      },
-    });
+    // ✅ Insert new user into the database
+    const newUser = await pool.query(
+      `INSERT INTO appuser (first_name, last_name, email, mobile, landline, date_of_birth, password_hash, user_type, role)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING email`,
+      [
+        firstName,
+        lastName,
+        email,
+        mobile || null,
+        landline || null,
+        dateOfBirth ? new Date(dateOfBirth) : null,
+        hashedPassword,
+        "customer", // Default user type
+        "standard", // Default role
+      ]
+    );
 
     return NextResponse.json(
-      { message: "User registered successfully", user: { email: newUser.email } },
+      { message: "User registered successfully", user: { email: newUser.rows[0].email } },
       { status: 201 }
     );
   } catch (err) {
