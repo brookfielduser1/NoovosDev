@@ -20,20 +20,25 @@ export default function Dashboard() {
   if (status === "loading") return <p>Loading...</p>;
   if (!session) return <p>Redirecting to login...</p>;
 
-  // Call the Search API
+  // Mock Data for Search Results
+  const mockResults = Array(15).fill({
+    id: 1,
+    name: "Luxury Spa Massage",
+    business: "Relax Spa & Wellness",
+    description: "Relaxing full-body massage with essential oils.",
+    price: "£50",
+    location: "London",
+    image: "https://via.placeholder.com/150",
+  });
+
+  // Handle Search
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setLoading(true);
-
-    try {
-      const res = await fetch(`/api/search?query=${encodeURIComponent(searchQuery)}`);
-      const data = await res.json();
-      setSearchResults(data); // ✅ Store API results in state
-    } catch (error) {
-      console.error("❌ Error fetching search results:", error);
-    }
-
-    setLoading(false);
+    setTimeout(() => {
+      setSearchResults(mockResults);
+      setLoading(false);
+    }, 1000);
   };
 
   // Handle "Enter" Key Press for Search
@@ -42,9 +47,6 @@ export default function Dashboard() {
       handleSearch();
     }
   };
-
-  // Default Placeholder Image (when no service or business image exists)
-  const placeholderImage = "https://via.placeholder.com/150/cccccc/ffffff?text=No+Image";
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -61,7 +63,7 @@ export default function Dashboard() {
             placeholder="Search for services..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown} // 🔹 Trigger search on Enter
+            onKeyDown={handleKeyDown}
             className="w-full p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
@@ -73,49 +75,37 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 🔹 Search Results Section */}
+      {/* 🔹 Search Results Section (Now Ensuring Full Page Scroll) */}
       <div className="w-full max-w-4xl mx-auto mt-6 pb-16">
+        <h2 className="text-xl font-semibold mb-4">Search Results</h2>
+
         {loading ? (
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500"></div>
           </div>
         ) : searchResults.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {searchResults.map((result, index) => {
-              // Determine the image to use
-              const imageUrl = result.service_image || result.business_profile || placeholderImage;
-
-              // Shorten description to 20 characters max
-              const truncatedDescription =
-                result.service_description.length > 200
-                  ? result.service_description.substring(0, 200) + "..."
-                  : result.service_description;
-
-              return (
-                <div
-                  key={index}
-                  className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex"
-                >
-                  {/* Image */}
+            {searchResults.map((result, index) => (
+              <div
+                key={index}
+                className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer"
+              >
+                <div className="flex">
                   <img
-                    src={imageUrl}
-                    alt={result.service_name}
-                    className="w-24 h-24 object-cover rounded-lg mr-4"
+                    src={result.image}
+                    alt={result.name}
+                    className="w-16 h-16 object-cover rounded-lg mr-4"
                   />
-
-                  {/* Text Content */}
                   <div>
-                    <h3 className="text-lg font-semibold">{result.service_name}</h3> {/* ✅ Service Name */}
-                    <p className="text-sm text-gray-500">{result.business_name}</p> {/* ✅ Business Name */}
-                    <p className="text-gray-600 mt-2">{truncatedDescription}</p> {/* ✅ Truncated Description */}
-                    <p className="text-blue-600 font-semibold mt-2">£{result.cost}</p> {/* ✅ Cost */}
-                    <p className="text-sm text-gray-500">
-                      {result.city}, {result.postcode}
-                    </p> {/* ✅ Location */}
+                    <h3 className="text-lg font-semibold">{result.name}</h3>
+                    <p className="text-sm text-gray-500">{result.business}</p>
+                    <p className="text-gray-600">{result.description}</p>
+                    <p className="text-blue-600 font-semibold">{result.price}</p>
+                    <p className="text-sm text-gray-500">{result.location}</p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         ) : (
           <p className="text-gray-600">No results found</p>

@@ -9,11 +9,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="h-full overflow-hidden">
-      <body className="h-full min-h-screen bg-white dark:bg-black overflow-hidden">
+    <html lang="en" className="h-full">
+      <body className="min-h-screen bg-white dark:bg-black">
         <SessionProviderWrapper>
           <Header />
-          <main className="container mx-auto p-4 pt-16 h-[calc(100vh-4rem)]">
+          <main className="container mx-auto p-4 pt-16">
             {children}
           </main>
         </SessionProviderWrapper>
