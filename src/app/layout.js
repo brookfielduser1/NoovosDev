@@ -13,7 +13,8 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen bg-white dark:bg-black">
         <SessionProviderWrapper>
           <Header />
-          <main className="container mx-auto p-4 pt-16">
+          {/* <main className="container mx-auto p-4 pt-16"> */}
+          <main className="w-full p-4 pt-16">
             {children}
           </main>
         </SessionProviderWrapper>

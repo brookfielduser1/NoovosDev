@@ -44,7 +44,7 @@ export default function Dashboard() {
   };
 
   // Default Placeholder Image (when no service or business image exists)
-  const placeholderImage = "/placeholder.jpg"; // ✅ Can be updated later
+  const placeholderImage = "https://via.placeholder.com/150/cccccc/ffffff?text=No+Image";
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -54,22 +54,19 @@ export default function Dashboard() {
           Find the Best Services Near You
         </h1>
 
-        {/* 🔹 Search Bar */}
-        <div className="relative">
+        {/* 🔹 Search Bar with Button */}
+        <div className="flex">
           <input
             type="text"
             placeholder="Search for services..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown} // 🔹 Press "Enter" to search
-            className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onKeyDown={handleKeyDown} // 🔹 Trigger search on Enter
+            className="w-full p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-          <div className="absolute left-3 top-3 text-gray-400">
-            🔍 {/* Search Icon (optional) */}
-          </div>
           <button
             onClick={handleSearch}
-            className="absolute right-3 top-2.5 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition"
+            className="bg-blue-500 text-white px-4 py-3 rounded-r-lg hover:bg-blue-600 transition"
           >
             Search
           </button>
@@ -83,15 +80,12 @@ export default function Dashboard() {
             <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500"></div>
           </div>
         ) : searchResults.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {searchResults.map((result, index) => {
-              // ✅ Determine which image to use based on hierarchy:
-              const imageUrl =
-                result.service_image_thumbnail ||
-                result.business_profile_image ||
-                placeholderImage;
+              // Determine the image to use
+              const imageUrl = result.service_image || result.business_profile || placeholderImage;
 
-              // ✅ Shorten description to 200 characters max
+              // Shorten description to 20 characters max
               const truncatedDescription =
                 result.service_description.length > 200
                   ? result.service_description.substring(0, 200) + "..."
@@ -100,33 +94,31 @@ export default function Dashboard() {
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden cursor-pointer flex p-4 border border-gray-300"
+                  className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer flex"
                 >
-                  {/* 🔹 Updated: Smaller Image Section with Subtle Border */}
+                  {/* Image */}
                   <img
                     src={imageUrl}
                     alt={result.service_name}
-                    className="w-24 h-24 object-cover rounded-lg border border-gray-400"
+                    className="w-24 h-24 object-cover rounded-lg mr-4"
                   />
 
-                  {/* 🔹 Card Content */}
-                  <div className="ml-4 flex flex-col justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">{result.service_name}</h3>
-                    <p className="text-sm text-gray-500">{result.business_name}</p>
-                    <p className="text-gray-600 mt-2">{truncatedDescription}</p>
-                    <div className="flex justify-between items-center mt-3">
-                      <p className="text-blue-600 font-semibold">£{result.cost}</p>
-                      <p className="text-sm text-gray-500">
-                        {result.city}, {result.postcode}
-                      </p>
-                    </div>
+                  {/* Text Content */}
+                  <div>
+                    <h3 className="text-lg font-semibold">{result.service_name}</h3> {/* ✅ Service Name */}
+                    <p className="text-sm text-gray-500">{result.business_name}</p> {/* ✅ Business Name */}
+                    <p className="text-gray-600 mt-2">{truncatedDescription}</p> {/* ✅ Truncated Description */}
+                    <p className="text-blue-600 font-semibold mt-2">£{result.cost}</p> {/* ✅ Cost */}
+                    <p className="text-sm text-gray-500">
+                      {result.city}, {result.postcode}
+                    </p> {/* ✅ Location */}
                   </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          <p className="text-gray-600 text-center">No results found</p>
+          <p className="text-gray-600">No results found</p>
         )}
       </div>
     </div>
