@@ -1,4 +1,4 @@
-import { searchServices } from "@/services/searchService";
+import { searchServices } from "@/app/dashboard/searchServices";
 import { NextResponse } from "next/server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "http://localhost:3000/uploads/";
