@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import DashboardSearch from "./DashboardSearch";
+import DashboardSearchBar from "./DashboardSearchBar";
 import SearchResults from "./SearchResults";
 
 export default function Dashboard() {
@@ -12,7 +12,6 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const placeholderThumbnail = "/uploads/thumbnail/placeholder.jpg";
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -23,21 +22,24 @@ export default function Dashboard() {
   if (status === "loading") return <p>Loading...</p>;
   if (!session) return <p>Redirecting to login...</p>;
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setLoading(true);
+const handleSearch = async () => {
+  if (!searchQuery.trim()) return;
+  setLoading(true);
 
-    try {
-      const res = await fetch(`/api/search?query=${encodeURIComponent(searchQuery)}`);
-      const data = await res.json();
-      console.log("🔍 API Response:", data);
-      setSearchResults(data);
-    } catch (error) {
-      console.error("❌ Error fetching search results:", error);
-    }
+  try {
+    const res = await fetch(`/api/search_db?query=${encodeURIComponent(searchQuery)}`);
+    const text = await res.text(); // ✅ Get raw response
 
-    setLoading(false);
-  };
+    // console.log("🔍 Raw API Response:", text); // ✅ Debug the raw response
+
+    const data = JSON.parse(text); // ✅ Convert to JSON
+    setSearchResults(data);
+  } catch (error) {
+    console.error("❌ Error fetching search results:", error);
+  }
+
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -47,12 +49,12 @@ export default function Dashboard() {
         </h1>
 
         {/* 🔹 Importing Search Bar Component */}
-        <DashboardSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSearch={handleSearch} />
+        <DashboardSearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSearch={handleSearch} />
       </div>
 
       <div className="w-full max-w-4xl mx-auto mt-6 pb-16">
-        {/* 🔹 Importing Search Results Component */}
-        <SearchResults searchResults={searchResults} loading={loading} placeholderThumbnail={placeholderThumbnail} />
+        {/* 🔹 Pass raw data, let SearchResults process images */}
+        <SearchResults searchResults={searchResults} loading={loading} />
       </div>
     </div>
   );
